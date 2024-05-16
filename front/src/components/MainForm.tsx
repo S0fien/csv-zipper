@@ -1,61 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import { Form } from 'antd';
-import UploadField from './UploadField.tsx';
-import ErrorMessage from './ErrorMessage.tsx';
-import useWebSocket from '../hooks/useWebSocket.ts';
-import { ApiResponse } from '../types/ApiResponse.ts';
+import React, { useContext, useEffect, useState } from "react";
+import { Form, Typography } from "antd";
+import UploadField from "./UploadField.tsx";
+import useWebSocket from "../hooks/useWebSocket.ts";
+import { ApiResponseType } from "../types/ApiResponseType.ts";
+import { FileContext } from "../context/FileContext.ts";
+import FormFeedback from "./FormFeedback.tsx";
+import { FileManipulation } from "../utils/fileManipulation.ts";
+import FormResult from "./FormResult.tsx";
 
+const { Text } = Typography;
 const formItemLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 },
 };
 
-const normFile = (e: any) => {
-  console.log('Upload event:', e);
-  if (Array.isArray(e)) {
-    return e;
-  }
-  return e?.file;
-};
-
 const MainForm: React.FC = () => {
-  const [link, setLink] = useState<string>('');
-  const [downloadMessage, setDownload] = useState<string>(null);
-  const [errorMessage, setError] = useState<string>('');
-  const [uploading, setUploading] = useState<boolean>(false);
-  const { messages, isOpen } = useWebSocket('ws://localhost:8080');
+  const [context, setContext] = useContext(FileContext);
+  const { isUploading, error, isDownloadReady, downloadLink } = context;
+  const [downloadMessage, setDownload] = useState<ApiResponseType>();
+  const { messages } = useWebSocket('ws://127.0.0.1:5599');
 
-  // @ts-ignore
-  const downloadLink = (data) => {
-    const url = window.URL.createObjectURL(new Blob([new Uint8Array(data)]));
-    setLink(url);
-  };
+
+
   useEffect(() => {
-    if (errorMessage) {
-      setLink('');
-      setDownload('');
+    if (error?.message && !error) {
+      setContext({ ...context, error });
+      setDownload(undefined);
     }
-  }, [errorMessage]);
+  }, [context, error, error?.message, setContext]);
   useEffect(() => {
-    if (downloadMessage) {
-      downloadLink(downloadMessage.file.data);
-      setUploading(false);
-      // downloadFile().then((res) => console.log(res))
+    if (downloadMessage && !isDownloadReady) {
+
+      const url = FileManipulation.downloadLink(downloadMessage.file.data);
+      setContext({
+        ...context,
+        isDownloadReady: true,
+        file: downloadMessage.file,
+        downloadUrl: url
+      });
+
     }
-  }, [downloadMessage]);
+  }, [context, downloadLink, downloadMessage, isDownloadReady, setContext]);
   useEffect(() => {
     if (messages) {
-      console.log('new messages', messages);
-      messages.forEach((message: ApiResponse) => {
+      messages.forEach((message: ApiResponseType) => {
         setDownload(message);
       });
-    } else {
-      console.log('no message');
     }
   }, [messages]);
-  // @ts-ignore
   return (
     <Form
+      disabled={isUploading}
       name="validate_other"
       {...formItemLayout}
       initialValues={{
@@ -67,32 +62,12 @@ const MainForm: React.FC = () => {
       style={{ maxWidth: 600, margin: 'auto', justifyContent: 'center' }}
     >
       <Form.Item rootClassName={'upload-container'}>
-        <Form.Item
-          name="dragger"
-          valuePropName="file"
-          getValueFromEvent={normFile}
-          style={{ justifyContent: 'center' }}
-          rootClassName={'testdsffsfd4'}
-        >
-          <UploadField setError={setError} setUploading={setUploading} />
+        <Form.Item name="dragger" valuePropName="file" style={{ justifyContent: 'center' }} rootClassName={'testdsffsfd4'}>
+          <UploadField />
         </Form.Item>
       </Form.Item>
-      {uploading && <p>Votre fichier est en cours de compression...</p>}
-      {errorMessage && <ErrorMessage message={errorMessage} />}
-      {isOpen ? (
-        link && (
-          <>
-            <p>Archive is now ready !</p>
-            <p>
-              <a download={'file.zip'} href={link}>
-                Download your .ZIP
-              </a>
-            </p>
-          </>
-        )
-      ) : (
-        <p>Connecting...</p>
-      )}
+      <FormFeedback />
+      <FormResult />
     </Form>
   );
 };

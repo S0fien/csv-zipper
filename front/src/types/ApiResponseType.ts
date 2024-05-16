@@ -1,8 +1,8 @@
-export type ApiResponse = {
+export type ApiResponseType = {
   event: string;
   success: boolean;
   status: string;
   message: string;
   url?: string;
-  files: any;
+  file: any;
 };

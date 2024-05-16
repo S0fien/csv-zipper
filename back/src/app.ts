@@ -3,15 +3,29 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { uploadFile } from './controllers/files.controllers';
+import { downloadFile, uploadFile } from './controllers/files.controllers';
 import multer from 'multer';
-import * as fs from 'fs';
+import { checkOrCreateDir } from './utils/checkOrCreateDir';
+import { FEMALE_FILE_PATH, MALE_FILE_PATH, UPLOAD_DIR_PATH } from './constants/PATHS';
+import fs from 'fs';
 
-const uploadsDirectory = 'uploads/';
-if (!fs.existsSync(uploadsDirectory)) {
-  fs.mkdirSync(uploadsDirectory, { recursive: true });
-}
-const upload = multer({ dest: uploadsDirectory });
+checkOrCreateDir(UPLOAD_DIR_PATH);
+const data = new Uint8Array(Buffer.from('Hello Node.js'));
+fs.writeFile(MALE_FILE_PATH, data, 'utf8', function (err) {
+  if (err) {
+    console.log('Some error occured - file either not saved or corrupted file saved.');
+  } else {
+    console.log("It's saved!");
+  }
+});
+fs.writeFile(FEMALE_FILE_PATH, data, 'utf8', function (err) {
+  if (err) {
+    console.log('Some error occured - file either not saved or corrupted file saved.');
+  } else {
+    console.log("It's saved!");
+  }
+});
+const upload = multer({ dest: UPLOAD_DIR_PATH });
 
 dotenv.config();
 const app = express(); // New express instance
@@ -32,21 +46,12 @@ app.use(function (req, res, next) {
 
   next();
 });
-
 // Use routes
 app.get('/', (req: Request, res: Response): void => {
   res.status(200).send('Hello World! POST to /upload to zip your CSV.');
 });
 
-app.get('/downloads/:id', (req: Request, res: Response): void => {
-  const file = fs.readFile(req.params.id, (err, data) => {
-    if (err) {
-      throw new Error('Cannot read file');
-      res.status(500).send('lol');
-    }
-    res.status(200).send(file);
-  });
-});
+app.get('/downloads/:id', downloadFile);
 
 app.post('/upload', upload.single('file'), uploadFile);
 
