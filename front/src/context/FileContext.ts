@@ -18,9 +18,9 @@ export interface storeInterface {
   error?: boolean;
   isDownloadReady: boolean;
   downloadUrl?: string;
-  file?: null,
-  status: string,
+  file?: null;
+  status: string;
 }
 
-// Todo: use storeinterface instead of any
+// Todo: use replace never of createContext
 export const FileContext = createContext<any>(store);

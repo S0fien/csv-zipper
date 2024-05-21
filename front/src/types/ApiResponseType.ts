@@ -1,8 +1,8 @@
-type FileType = {
-  path: string
-  name: string
-  data: ArrayBuffer,
-}
+export type FileType = {
+  path: string;
+  name: string;
+  data: ArrayBuffer;
+};
 
 export type ApiResponseType = {
   event: string;

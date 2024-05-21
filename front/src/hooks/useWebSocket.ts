@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { ApiResponseType } from "../types/ApiResponseType";
 
 function useWebSocket(url: string) {
-  const [, setSocket] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [, setSocket] = useState<WebSocket | null>(null);
+  const [messages, setMessages] = useState<ApiResponseType[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -15,9 +16,7 @@ function useWebSocket(url: string) {
     };
 
     newSocket.onmessage = (event) => {
-      console.log('new mess', event);
       const parsed = JSON.parse(event.data);
-      console.log('parsed', parsed);
       setMessages((prevMessages) => [...prevMessages, parsed]);
     };
 

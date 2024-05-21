@@ -1,6 +1,7 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer } from "ws";
 
 const server = new WebSocketServer({ port: 5599 });
+console.log('WS Server is now up 🌈');
 
 server.on('connection', function connection(ws) {
   ws.on('error', console.error);
@@ -8,8 +9,6 @@ server.on('connection', function connection(ws) {
   ws.on('message', function message(data) {
     console.log('received: %s', data);
   });
-
-  console.log('WS Server is now up 🌈');
 });
 
 export default server;

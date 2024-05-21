@@ -3,14 +3,11 @@ import { Layout } from "antd";
 import Main from "./Main.tsx";
 import Footer from "./Footer.tsx";
 import { FileContext, store, storeInterface } from "../context/FileContext.ts";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function App() {
   const [context, setContext] = useState<storeInterface>(store);
 
-  useEffect(() => {
-    console.log('context : ', context)
-  }, [context]);
   return (
     <>
       <FileContext.Provider value={[context, setContext]}>

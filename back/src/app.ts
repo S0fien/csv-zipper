@@ -1,29 +1,14 @@
-// Import express, cors, helmet and morgan
-import express, { type Request, type Response } from 'express'
-import cors from 'cors'
-import helmet from 'helmet'
-import dotenv from 'dotenv'
-import { downloadFile, uploadFile } from './controllers/files.controllers'
-import multer from 'multer'
-import { checkOrCreateDir } from './utils/checkOrCreateDir'
-import PATHS from './constants/paths'
+import express, { type Request, type Response } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import dotenv from "dotenv";
+import { downloadFile, uploadFile } from "./controllers/files.controllers";
+import multer from "multer";
+import { checkOrCreateDir } from "./utils/checkOrCreateDir";
+import PATHS from "./constants/paths";
 
 checkOrCreateDir(PATHS.UPLOAD_DIR_PATH)
-const data = new Uint8Array(Buffer.from('Hello Node.js'))
-// fs.writeFile(PATHS.MALE_FILE_PATH, data, 'utf8', function (err) {
-//   if (err) {
-//     console.log('Some error occured - file either not saved or corrupted file saved.');
-//   } else {
-//     console.log("It's saved!");
-//   }
-// });
-// fs.writeFile(PATHS.FEMALE_FILE_PATH, data, 'utf8', function (err) {
-//   if (err) {
-//     console.log('Some error occured - file either not saved or corrupted file saved.');
-//   } else {
-//     console.log("It's saved!");
-//   }
-// });
+
 const upload = multer({ dest: PATHS.UPLOAD_DIR_PATH })
 
 dotenv.config()

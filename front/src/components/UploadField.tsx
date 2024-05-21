@@ -1,31 +1,35 @@
-import axios from "axios";
 import { message, Upload } from "antd";
-import UploadFieldContent from "./UploadFieldContent.tsx";
-import { MAX_FILE_SIZE, MESSAGE_DURATION } from "../constants/rules.ts";
+import axios from "axios";
+import { UploadRequestOption } from "rc-upload/lib/interface";
 import { useContext } from "react";
+import { MAX_FILE_SIZE, MESSAGE_DURATION } from "../constants/rules.ts";
+import URLS from "../constants/urls.ts";
 import { FileContext } from "../context/FileContext.ts";
 import { FileManipulation } from "../utils/fileManipulation.ts";
-import URLS from "../constants/urls.ts";
+import UploadFieldContent from "./UploadFieldContent.tsx";
 
 message.config({ duration: MESSAGE_DURATION });
 
 const UploadField = () => {
   const [context, setContext] = useContext(FileContext);
   const { isRequesting } = context;
-  const customRequest = async (options) => {
-    const { onSuccess, onError, file } = options;
+  const customRequest = async (options: UploadRequestOption) => {
+    const { file: fileFromOptions } = options;
 
+    const file = fileFromOptions as File;
     setContext({
       ...context,
+      isDownloadReady: false,
+      downloadUrl: '',
       isRequesting: true,
       isUploading: true,
       error: false,
-      file
+      file,
     });
 
-    const uploadedSize = FileManipulation.sizeToMo(file.size);
+    const uploadedSize = FileManipulation.sizeToMo(file['size']);
     if (uploadedSize > MAX_FILE_SIZE) {
-      onError('Size to big.');
+      throw new Error('Size too big.')
     } else {
       const formData = new FormData();
       formData.append('file', file);
@@ -45,14 +49,14 @@ const UploadField = () => {
           isRequesting: true,
           error: false,
         });
-        onSuccess();
       } catch (err) {
         setContext({
           ...context,
           isUploading: false,
           error: true,
+          isDownloadReady: false,
+          downloadUrl: '',
         });
-        onError();
       }
     }
   };

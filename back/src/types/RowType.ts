@@ -1,4 +1,4 @@
-export interface RowType {
+export type RowType = {
   uid: string
   firstName: string
   lastName: string
