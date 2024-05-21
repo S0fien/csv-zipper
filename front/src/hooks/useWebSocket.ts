@@ -1,10 +1,7 @@
-import { useContext, useEffect, useState } from "react";
-import { FileContext } from "../context/FileContext.ts";
+import { useEffect, useState } from "react";
 
-function useWebSocket(url) {
-  const [context, setContext] = useContext(FileContext);
-
-  const [socket, setSocket] = useState(null);
+function useWebSocket(url: string) {
+  const [, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 

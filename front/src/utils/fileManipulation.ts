@@ -1,8 +1,8 @@
 export const FileManipulation = {
-  sizeToMo(file) {
+  sizeToMo(file: number) {
     return Number.parseInt((file / 1024 / 1024).toFixed(2));
   },
   downloadLink(data: ArrayBuffer) {
-    return window.URL.createObjectURL(new Blob([new Uint8Array(data)]))
-  }
+    return window.URL.createObjectURL(new Blob([new Uint8Array(data)]));
+  },
 };

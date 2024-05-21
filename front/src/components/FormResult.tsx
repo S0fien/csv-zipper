@@ -1,33 +1,30 @@
-import { Button, Typography } from "antd";
-import React, { useContext } from "react";
-import { FileContext } from "../context/FileContext.ts";
+import { Button } from "antd";
 import useWebSocket from "../hooks/useWebSocket.ts";
-
-const { Text } = Typography;
+import URLS from "../constants/urls.ts";
+import Title from "antd/lib/typography/Title";
+import { FileContext } from "../context/FileContext.ts";
+import { useContext } from "react";
 
 export const FormResult = () => {
   const [context] = useContext(FileContext);
-  const { isOpen } = useWebSocket('ws://127.0.0.1:5599');
-  const { isDownloadReady, downloadUrl} = context
+  const { isOpen } = useWebSocket(URLS.WEBSOCKET_URL);
+  const { isDownloadReady, downloadUrl } = context;
 
   if (!isOpen) {
-    return (
-      <p className="ant-upload-text">Connecting to the WebSockets server...</p>
-    )
+    return <p className="ant-upload-text">Connecting to the WebSockets server...</p>;
   }
-  if (isOpen && isDownloadReady) {
+  if (isDownloadReady) {
     return (
       <>
         <div>
-        <Text type={'success'}>Archive is now ready !</Text>
-        </div>
-        <div>
-          <Button type={'primary'} download={'file.zip'} href={downloadUrl}>
+          <Title level={3} type={'success'}>Archive is now ready !</Title>
+          <Button type={'primary'} size={'large'} download={'zipped-csv.zip'} href={downloadUrl}>
             Download your .ZIP
           </Button>
         </div>
       </>
-    )}
-}
+    );
+  }
+};
 
-export default FormResult
+export default FormResult;

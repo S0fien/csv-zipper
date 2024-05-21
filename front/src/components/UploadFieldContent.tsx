@@ -1,15 +1,17 @@
-import { FileAddOutlined } from "@ant-design/icons";
+import { FileZipOutlined } from "@ant-design/icons";
 import { MAX_FILE_SIZE } from "../constants/rules.ts";
+import { Space, Typography } from "antd";
+
+const { Text } = Typography;
 
 const UploadFieldContent = () => {
   return (
-    <>
-      <p className="ant-upload-drag-icon">
-        <FileAddOutlined />
-      </p>
-      <p className="ant-upload-text">Click or drag file to this area to upload</p>
-      <p className="ant-upload-text">Support only a single .CSV file with a limit of {MAX_FILE_SIZE}/mb per file.</p>
-    </>
+    <Space direction={'vertical'}>
+      <FileZipOutlined style={{ fontSize: '3em', color: 'blueviolet' }} />
+      <Text type={'secondary'}>Click or drag file to this area to upload</Text>
+      <Text>Support only a single .CSV file with a
+        <Text strong style={{fontSize: '1.25em'}}> limit of {MAX_FILE_SIZE}/mb per file.</Text> </Text>
+    </Space>
   );
 };
 

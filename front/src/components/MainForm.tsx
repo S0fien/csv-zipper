@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Form, Typography } from "antd";
+import { Divider, Form } from "antd";
 import UploadField from "./UploadField.tsx";
 import useWebSocket from "../hooks/useWebSocket.ts";
 import { ApiResponseType } from "../types/ApiResponseType.ts";
@@ -7,8 +7,8 @@ import { FileContext } from "../context/FileContext.ts";
 import FormFeedback from "./FormFeedback.tsx";
 import { FileManipulation } from "../utils/fileManipulation.ts";
 import FormResult from "./FormResult.tsx";
+import URLS from "../constants/urls.ts";
 
-const { Text } = Typography;
 const formItemLayout = {
   labelCol: { span: 6 },
   wrapperCol: { span: 14 },
@@ -16,11 +16,9 @@ const formItemLayout = {
 
 const MainForm: React.FC = () => {
   const [context, setContext] = useContext(FileContext);
-  const { isUploading, error, isDownloadReady, downloadLink } = context;
+  const { isRequesting, error, isDownloadReady, downloadUrl } = context;
   const [downloadMessage, setDownload] = useState<ApiResponseType>();
-  const { messages } = useWebSocket('ws://127.0.0.1:5599');
-
-
+  const { messages } = useWebSocket(URLS.WEBSOCKET_URL);
 
   useEffect(() => {
     if (error?.message && !error) {
@@ -30,17 +28,15 @@ const MainForm: React.FC = () => {
   }, [context, error, error?.message, setContext]);
   useEffect(() => {
     if (downloadMessage && !isDownloadReady) {
-
       const url = FileManipulation.downloadLink(downloadMessage.file.data);
       setContext({
         ...context,
         isDownloadReady: true,
-        file: downloadMessage.file,
-        downloadUrl: url
+        downloadUrl: url,
+        isRequesting: false
       });
-
     }
-  }, [context, downloadLink, downloadMessage, isDownloadReady, setContext]);
+  }, [context, downloadUrl, downloadMessage, isDownloadReady, setContext]);
   useEffect(() => {
     if (messages) {
       messages.forEach((message: ApiResponseType) => {
@@ -50,7 +46,7 @@ const MainForm: React.FC = () => {
   }, [messages]);
   return (
     <Form
-      disabled={isUploading}
+      disabled={isRequesting}
       name="validate_other"
       {...formItemLayout}
       initialValues={{
@@ -62,11 +58,12 @@ const MainForm: React.FC = () => {
       style={{ maxWidth: 600, margin: 'auto', justifyContent: 'center' }}
     >
       <Form.Item rootClassName={'upload-container'}>
-        <Form.Item name="dragger" valuePropName="file" style={{ justifyContent: 'center' }} rootClassName={'testdsffsfd4'}>
+        <Form.Item name="dragger" valuePropName="file" style={{ justifyContent: 'center' }}>
           <UploadField />
         </Form.Item>
       </Form.Item>
       <FormFeedback />
+      <Divider />
       <FormResult />
     </Form>
   );

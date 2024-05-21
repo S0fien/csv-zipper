@@ -1,7 +1,7 @@
-import { Content } from 'antd/es/layout/layout';
-import { Flex } from 'antd';
-import MainForm from '../components/MainForm.tsx';
-import Heading from '../components/Heading.tsx';
+import { Content } from "antd/es/layout/layout";
+import { Flex } from "antd";
+import MainForm from "../components/MainForm.tsx";
+import Heading from "./Heading.tsx";
 
 export const Main = () => {
   return (

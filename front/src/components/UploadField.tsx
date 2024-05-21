@@ -1,42 +1,38 @@
 import axios from "axios";
 import { message, Upload } from "antd";
 import UploadFieldContent from "./UploadFieldContent.tsx";
-import UploadItem from "./UploadItem.tsx";
 import { MAX_FILE_SIZE, MESSAGE_DURATION } from "../constants/rules.ts";
 import { useContext } from "react";
 import { FileContext } from "../context/FileContext.ts";
 import { FileManipulation } from "../utils/fileManipulation.ts";
+import URLS from "../constants/urls.ts";
 
 message.config({ duration: MESSAGE_DURATION });
 
 const UploadField = () => {
   const [context, setContext] = useContext(FileContext);
-  const { isRequesting } = context
+  const { isRequesting } = context;
   const customRequest = async (options) => {
     const { onSuccess, onError, file } = options;
 
-    // file.fileName = options.fileName
-    // file.size = options.size
     setContext({
       ...context,
       isRequesting: true,
       isUploading: true,
-      error: null,
-      file,
+      error: false,
+      file
     });
 
-    const uploadedSize = FileManipulation.sizeToMo(file);
+    const uploadedSize = FileManipulation.sizeToMo(file.size);
     if (uploadedSize > MAX_FILE_SIZE) {
-      onError('Size to big.')
-    }
-    else {
+      onError('Size to big.');
+    } else {
       const formData = new FormData();
       formData.append('file', file);
-      console.log('working', file);
       try {
         await axios({
           method: 'POST',
-          url: 'http://localhost:3000/upload',
+          url: URLS.API_UPLOAD_URL,
           data: formData,
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -46,17 +42,17 @@ const UploadField = () => {
           ...context,
           isUploading: false,
           isAwaitingServer: true,
-          error: null,
+          isRequesting: true,
+          error: false,
         });
-        onSuccess()
+        onSuccess();
       } catch (err) {
         setContext({
           ...context,
           isUploading: false,
-          isRequesting: false,
-          error: err.response.data.errorMessage,
+          error: true,
         });
-        onError('fsdfdsd');
+        onError();
       }
     }
   };
@@ -66,12 +62,8 @@ const UploadField = () => {
       disabled={isRequesting}
       style={{ justifyContent: 'center' }}
       name="file"
-      action="http://localhost:3000/upload"
       listType={'picture'}
       maxCount={1}
-      onDownload={(e) => {
-        console.log('drop', e);
-      }}
       accept={'.csv'}
       onChange={(info) => {
         const { status } = info.file;
@@ -81,7 +73,7 @@ const UploadField = () => {
           message.error(`The upload of your file ${info.file.name} had failed.`);
         }
       }}
-      itemRender={() => <UploadItem />}
+      showUploadList={false}
       customRequest={(options) => customRequest(options)}
     >
       <UploadFieldContent />
