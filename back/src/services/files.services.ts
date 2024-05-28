@@ -10,6 +10,8 @@ import type { Request } from "express";
 import { CreateArchiveInterface } from "../interfaces/CreateArchive.interface";
 import archiver from "archiver";
 import type { FileType } from "../types/FileType";
+import logger from "../utils/logger";
+import { deleteFile, deleteFolderRecursive } from "../utils/checkOrCreateDir";
 
 export const FilesServices = {
   validateCsvFile: async function(filePath: string) {
@@ -28,14 +30,14 @@ export const FilesServices = {
             rows.push(row)
           } catch (error) {
             errors.push(error as Error['message'])
-            throw new Error('Data validation failed in validateCsvFile.')
+            reject(new Error('Data validation failed in validateCsvFile.'))
           }
         })
         .on('end', (rowCount: number) => {
           if (errors.length > 0) {
             reject(new Error(`Validation errors: ${errors.join(', ')}`))
           } else {
-            console.log(`Parsed ${rowCount} rows`)
+            logger.info(`Parsed ${rowCount} rows`)
             resolve(rows)
           }
         })
@@ -50,8 +52,9 @@ export const FilesServices = {
     femaleStream.end()
 
     // ZIPPING PART
-    console.log('INFO: start zipping')
-    const outputFilePath = path.join(PATHS.OUTPUT_FILE_PATH) // Chemin pour sauvegarder le fichier ZIP
+    logger.info('Start zipping')
+    const outputFilePath = path.join(PATHS.OUTPUT_FILE_PATH)
+    const uploadDirPath = path.join(PATHS.UPLOAD_DIR_PATH)
     const output = fs.createWriteStream(outputFilePath)
     try {
       const files = [
@@ -63,24 +66,18 @@ export const FilesServices = {
         outputFilePath,
         files
       })
-      files.forEach((file: { path: fs.PathLike }) => {
-        fs.unlink(file.path, (err) => {
-          if (err != null) {
-            console.error('ERROR: removing the csv file failed', err)
-          }
-        })
-      })
       server.clients.forEach((client) => {
         client.send(JSON.stringify(zip))
       })
-      fs.unlink(outputFilePath, (err) => {
-        if (err != null) {
-          console.error('ERROR: removing the csv file failed', err)
-        }
+      // Cleaning
+      files.forEach((file: { path: fs.PathLike }) => {
+        deleteFile(path.join(file.path.toString()))
       })
-      console.log('PROCESS FINISH WITH SUCCESS')
+      deleteFile(outputFilePath)
+      deleteFolderRecursive(uploadDirPath)
+      logger.info('PROCESS FINISH WITH SUCCESS')
     } catch (e) {
-      console.error('ERROR: Zipping failed', e)
+      logger.error('ERROR: Zipping failed', e)
       throw new Error('Zipping failed')
     }
   },
@@ -103,7 +100,7 @@ export const FilesServices = {
         const { maleStream, femaleStream } = FilesServices.createFilesAndHeaders()
 
         // PARSING CSV PART
-        console.log('INFO: Starting parsing CSV.')
+        logger.info('Starting parsing CSV.')
         const parsedCsv = csv.parse({ headers: true })
         fs.createReadStream(file.path)
           .pipe(parsedCsv)
@@ -116,7 +113,7 @@ export const FilesServices = {
             }
           })
           .on('error', (error) => {
-            console.error('ERROR: Could not parse CSV', error)
+            logger.error('ERROR: Could not parse CSV', error)
             throw new Error('Could not parse CSV;')
           })
           .on('end', async () => {
@@ -128,7 +125,7 @@ export const FilesServices = {
             }
           )
       } catch (e) {
-        console.log('ERROR: Transform process failed', e)
+        logger.info('ERROR: Transform process failed', e)
         throw new Error('Transform process failed.')
       }
     } else {
@@ -156,7 +153,7 @@ createArchive: async ({ output, files, outputFilePath }: CreateArchiveInterface)
 
     output.on('close', async () => {
       fs.readFile(outputFilePath, (err, data) => {
-        if (err) throw new Error('Cannot read file')
+        if (err) reject(new Error('Cannot read file'))
         else {
           resolve({
             event: 'archive',

@@ -1,35 +1,34 @@
-import { type Request, type Response } from "express";
+import { NextFunction, type Request, type Response } from "express";
 import * as fs from "fs";
 import { FilesServices } from "../services/files.services";
+import { ApiError } from "../middlewares/errorHandler";
 
-export const uploadFile = async (req: Request, res: Response): Promise<void> => {
+export const uploadFile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (!req.file) {
     res.status(400).json({
       errorMessage: 'No file found in request.'
     })
   } else {
     try {
-      console.log('PROCESS START')
+      console.log('uploadFile: PROCESS START')
       await FilesServices.validateCsvFile(req.file?.path)
-      console.log('SUCCESS: File has been uploaded. Starting dividing CSV and zipping it.')
+      console.log('uploadFile: SUCCESS => File has been uploaded. Starting dividing CSV and zipping it.')
       res.status(200).json({
         message: 'File uploaded successfully.'
       })
       await FilesServices.transformCsvFile(req)
     } catch (e) {
       const error = e as Error
-      console.log('PROCESS FAILED', error)
-      res.status(500).json({
-        errorMessage: error.message
-      })
+      next(new ApiError(500, error.message))
+      console.error('uploadFile: PROCESS FAILED => ', error)
     }
   }
 }
 
-export const downloadFile = (req: Request, res: Response) => {
+export const downloadFile = (req: Request, res: Response, next: NextFunction) => {
   fs.readFile(req.params.id, (err, data) => {
     if (err) {
-      res.status(500).send('Cannot read file')
+      next(new ApiError(500, 'Cannot read file'))
     } else {
       res.status(200).send(data)
       fs.unlink(req.params.id, (err) => {

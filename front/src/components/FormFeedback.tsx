@@ -1,7 +1,7 @@
-import { useContext } from 'react';
-import { FEEDBACK_PROPS } from '../constants/props.tsx';
-import { FileContext } from '../context/FileContext.ts';
-import FeedbackMessage from './FeedbackMessage.tsx';
+import { useContext } from "react";
+import { FEEDBACK_PROPS } from "../constants/props.tsx";
+import { FileContext } from "../contexts/FileContext.ts";
+import FeedbackMessage from "./FeedbackMessage.tsx";
 
 const FormFeedback = () => {
   const [context] = useContext(FileContext);

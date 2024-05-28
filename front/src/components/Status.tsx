@@ -1,6 +1,6 @@
 import { Tag } from "antd";
 import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, UploadOutlined } from "@ant-design/icons";
-import { FileContext } from "../context/FileContext.ts";
+import { FileContext } from "../contexts/FileContext.ts";
 import { useContext } from "react";
 
 export const Status = () => {

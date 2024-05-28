@@ -4,7 +4,7 @@ import { UploadRequestOption } from "rc-upload/lib/interface";
 import { useContext } from "react";
 import { MAX_FILE_SIZE, MESSAGE_DURATION } from "../constants/rules.ts";
 import URLS from "../constants/urls.ts";
-import { FileContext } from "../context/FileContext.ts";
+import { FileContext } from "../contexts/FileContext.ts";
 import { FileManipulation } from "../utils/fileManipulation.ts";
 import UploadFieldContent from "./UploadFieldContent.tsx";
 

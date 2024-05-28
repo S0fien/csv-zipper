@@ -1,9 +1,11 @@
-import { Button } from "antd";
+import { Button, Typography } from "antd";
 import useWebSocket from "../hooks/useWebSocket.ts";
 import URLS from "../constants/urls.ts";
 import Title from "antd/lib/typography/Title";
-import { FileContext } from "../context/FileContext.ts";
+import { FileContext } from "../contexts/FileContext.ts";
 import { useContext } from "react";
+
+const { Text } = Typography;
 
 export const FormResult = () => {
   const [context] = useContext(FileContext);
@@ -11,7 +13,7 @@ export const FormResult = () => {
   const { isDownloadReady, downloadUrl } = context;
 
   if (!isOpen) {
-    return <p className="ant-upload-text">Connecting to the WebSockets server...</p>;
+    return <Text>Connecting to the WebSockets server...</Text>;
   }
   if (isDownloadReady) {
     return (
