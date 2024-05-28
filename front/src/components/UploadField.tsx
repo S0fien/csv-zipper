@@ -1,12 +1,12 @@
-import { message, Upload } from "antd";
-import axios from "axios";
-import { UploadRequestOption } from "rc-upload/lib/interface";
-import { useContext } from "react";
-import { MAX_FILE_SIZE, MESSAGE_DURATION } from "../constants/rules.ts";
-import URLS from "../constants/urls.ts";
-import { FileContext } from "../contexts/FileContext.ts";
-import { FileManipulation } from "../utils/fileManipulation.ts";
-import UploadFieldContent from "./UploadFieldContent.tsx";
+import { message, Upload } from 'antd';
+import axios from 'axios';
+import { UploadRequestOption } from 'rc-upload/lib/interface';
+import { useContext } from 'react';
+import { MAX_FILE_SIZE, MESSAGE_DURATION } from '../constants/rules.ts';
+import URLS from '../constants/urls.ts';
+import { FileContext } from '../contexts/FileContext.ts';
+import { FileManipulation } from '../utils/fileManipulation.ts';
+import UploadFieldContent from './UploadFieldContent.tsx';
 
 message.config({ duration: MESSAGE_DURATION });
 
@@ -29,7 +29,16 @@ const UploadField = () => {
 
     const uploadedSize = FileManipulation.sizeToMo(file['size']);
     if (uploadedSize > MAX_FILE_SIZE) {
-      throw new Error('Size too big.')
+      setContext({
+        ...context,
+        isDownloadReady: false,
+        downloadUrl: '',
+        isRequesting: false,
+        isUploading: false,
+        error: true,
+        errorMessage: 'size too big',
+        file,
+      });
     } else {
       const formData = new FormData();
       formData.append('file', file);
@@ -50,10 +59,12 @@ const UploadField = () => {
           error: false,
         });
       } catch (err) {
+        const error = err as Error
         setContext({
           ...context,
           isUploading: false,
           error: true,
+          errorMessage: error.message,
           isDownloadReady: false,
           downloadUrl: '',
         });
@@ -63,6 +74,7 @@ const UploadField = () => {
 
   return (
     <Upload.Dragger
+      data-testid={'upload-dragger'}
       disabled={isRequesting}
       style={{ justifyContent: 'center' }}
       name="file"

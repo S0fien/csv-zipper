@@ -1,17 +1,17 @@
-import type { RowType } from "../types/RowType";
-import fs from "fs";
-import * as csv from "fast-csv";
-import { OnEndInterface } from "../interfaces/OnEnd.interface";
-import path from "path";
-import PATHS from "../constants/paths";
-import server from "../utils/websocketServer";
-import { COLUMNS } from "../constants/columns";
-import type { Request } from "express";
-import { CreateArchiveInterface } from "../interfaces/CreateArchive.interface";
-import archiver from "archiver";
-import type { FileType } from "../types/FileType";
-import logger from "../utils/logger";
-import { deleteFile, deleteFolderRecursive } from "../utils/checkOrCreateDir";
+import type { RowType } from '../types/RowType';
+import fs from 'fs';
+import * as csv from 'fast-csv';
+import { OnEndInterface } from '../interfaces/OnEnd.interface';
+import path from 'path';
+import PATHS from '../constants/paths';
+import server from '../utils/websocketServer';
+import { COLUMNS } from '../constants/columns';
+import type { Request } from 'express';
+import { CreateArchiveInterface } from '../interfaces/CreateArchive.interface';
+import archiver from 'archiver';
+import type { FileType } from '../types/FileType';
+import logger from '../utils/logger';
+import { deleteFile, deleteFolder } from '../utils/checkOrCreateDir';
 
 export const FilesServices = {
   validateCsvFile: async function(filePath: string) {
@@ -28,14 +28,15 @@ export const FilesServices = {
           try {
             FilesServices.validateRow(row)
             rows.push(row)
-          } catch (error) {
-            errors.push(error as Error['message'])
-            reject(new Error('Data validation failed in validateCsvFile.'))
+          } catch (e) {
+            const error = e as Error
+            errors.push(error['message'])
+            reject('Data validation failed in validateCsvFile.')
           }
         })
         .on('end', (rowCount: number) => {
           if (errors.length > 0) {
-            reject(new Error(`Validation errors: ${errors.join(', ')}`))
+            reject(`Validation errors: ${errors.join(', ')}`)
           } else {
             logger.info(`Parsed ${rowCount} rows`)
             resolve(rows)
@@ -74,7 +75,7 @@ export const FilesServices = {
         deleteFile(path.join(file.path.toString()))
       })
       deleteFile(outputFilePath)
-      deleteFolderRecursive(uploadDirPath)
+      deleteFolder(uploadDirPath)
       logger.info('PROCESS FINISH WITH SUCCESS')
     } catch (e) {
       logger.error('ERROR: Zipping failed', e)

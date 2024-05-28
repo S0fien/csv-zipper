@@ -20,6 +20,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
+    "types": ["@vitest/jsdom"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

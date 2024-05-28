@@ -1,14 +1,14 @@
-import express, { type Request, type Response } from "express";
-import cors from "cors";
-import helmet from "helmet";
-import dotenv from "dotenv";
-import { downloadFile, uploadFile } from "./controllers/files.controllers";
-import multer from "multer";
-import { checkOrCreateDir } from "./utils/checkOrCreateDir";
-import PATHS from "./constants/paths";
-import { pinoHttp } from "pino-http";
-import logger from "./utils/logger";
-import { errorHandler } from "./middlewares/errorHandler";
+import express, { type Request, type Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import { downloadFile, uploadFile } from './controllers/files.controllers';
+import multer from 'multer';
+import { checkOrCreateDir } from './utils/checkOrCreateDir';
+import PATHS from './constants/paths';
+import { pinoHttp } from 'pino-http';
+import logger from './utils/logger';
+import { errorHandler } from './middlewares/errorHandler';
 
 checkOrCreateDir(PATHS.UPLOAD_DIR_PATH)
 
@@ -37,7 +37,7 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Methods', '*')
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
   res.setHeader('Access-Control-Allow-Credentials', 'true')
-  // res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Connection', 'keep-alive')
   res.setHeader('Cache-Control', 'no-cache')
 

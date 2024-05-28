@@ -1,7 +1,7 @@
-import { NextFunction, type Request, type Response } from "express";
-import * as fs from "fs";
-import { FilesServices } from "../services/files.services";
-import { ApiError } from "../middlewares/errorHandler";
+import { NextFunction, type Request, type Response } from 'express';
+import * as fs from 'fs';
+import { FilesServices } from '../services/files.services';
+import { ApiError } from '../middlewares/errorHandler';
 
 export const uploadFile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (!req.file) {

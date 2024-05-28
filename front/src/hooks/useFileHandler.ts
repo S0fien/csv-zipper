@@ -1,9 +1,9 @@
-import { useContext, useEffect, useState } from "react";
-import { FileContext } from "../contexts/FileContext";
-import useWebSocket from "../hooks/useWebSocket";
-import URLS from "../constants/urls.ts";
-import { ApiResponseType } from "../types/ApiResponseType.ts";
-import { FileManipulation } from "../utils/fileManipulation.ts";
+import { useContext, useEffect, useState } from 'react';
+import { FileContext } from '../contexts/FileContext';
+import useWebSocket from '../hooks/useWebSocket';
+import URLS from '../constants/urls.ts';
+import { ApiResponseType } from '../types/ApiResponseType.ts';
+import { FileManipulation } from '../utils/fileManipulation.ts';
 
 const useFileHandler = () => {
   const [context, setContext] = useContext(FileContext);
@@ -19,7 +19,7 @@ const useFileHandler = () => {
   }, [context, error, error?.message, setContext]);
 
   useEffect(() => {
-    if (downloadMessage && !isDownloadReady) {
+    if (downloadMessage && !isDownloadReady && isRequesting) {
       const url = FileManipulation.downloadLink(downloadMessage.file.data);
       setContext({
         ...context,
@@ -28,7 +28,7 @@ const useFileHandler = () => {
         isRequesting: false,
       });
     }
-  }, [context, downloadMessage, isDownloadReady, setContext]);
+  }, [context, downloadMessage, isDownloadReady, isRequesting, setContext]);
 
   useEffect(() => {
     if (messages) {

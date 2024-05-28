@@ -1,10 +1,11 @@
-import { createContext } from "react";
+import { createContext } from 'react';
 
 export const store = {
   isRequesting: false,
   isUploading: false,
   isAwaitingServer: false,
   error: false,
+  errorMessage: '',
   isDownloadReady: false,
   downloadUrl: '',
   file: null,
@@ -16,6 +17,7 @@ export interface storeInterface {
   isUploading: boolean;
   isAwaitingServer: boolean;
   error?: boolean;
+  errorMessage?: string,
   isDownloadReady: boolean;
   downloadUrl?: string;
   file?: null;

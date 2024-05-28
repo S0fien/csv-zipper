@@ -1,11 +1,10 @@
-import { Result } from "antd";
-import { FeedbackMessageInterface } from "../types/FeedbackMessage.interface.ts";
+import { Result } from 'antd';
+import { FeedbackMessageInterface } from '../types/FeedbackMessage.interface.ts';
 
 const FeedbackMessage = ({ ...defaultProps }: FeedbackMessageInterface) => {
 
-  if (defaultProps) {
     return (
-      <div>
+      <div data-testid={'feedback-message'}>
         <Result
           subTitle={defaultProps.subTitle}
           title={defaultProps.message}
@@ -15,7 +14,6 @@ const FeedbackMessage = ({ ...defaultProps }: FeedbackMessageInterface) => {
         />
       </div>
     );
-  }
 };
 
 export default FeedbackMessage;

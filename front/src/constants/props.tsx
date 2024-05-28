@@ -6,20 +6,13 @@ import { ResultStatusType } from './ResultType.ts';
 const { Text } = Typography;
 
 export const FEEDBACK_PROPS = {
-  ERROR_MESSAGE_PROPS: {
-    subTitle: <Text>Please try again!</Text>,
+  ERROR_MESSAGE_PROPS: (errorMessage: string) => ({
+    subTitle: <Text>Error message : <Text code>{errorMessage}</Text></Text>,
     status: 'error' as ResultStatusType,
     icon: <AlertFilled />,
     message: <Text>Oops! We may encounter tech problems.</Text>,
     extra: <Status />,
-  },
-  SUCCESS_MESSAGE_PROPS: {
-    extra: <Status />,
-    subTitle: 'subTitle',
-    status: 'success' as ResultStatusType,
-    icon: <StarFilled />,
-    message: 'I5E EUFEEE HITFH.',
-  },
+  }),
   UPLOADING_MESSAGE_PROPS: {
     extra: <Status />,
     status: 'info' as ResultStatusType,
@@ -28,7 +21,8 @@ export const FEEDBACK_PROPS = {
   },
   DOWNLOADED_MESSAGE_PROPS: {
     extra: <Status />,
-    status: 'info' as ResultStatusType,
+    icon: <StarFilled />,
+    status: 'success' as ResultStatusType,
     message: <Text>We've successfully compressed your file.</Text>,
     subTitle: <Text type={'secondary'}>You can click the download button.</Text>,
   },

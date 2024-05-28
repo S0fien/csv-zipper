@@ -1,10 +1,11 @@
-import { FileZipOutlined } from "@ant-design/icons";
-import { MAX_FILE_SIZE } from "../constants/rules.ts";
-import { Space, Typography } from "antd";
+import { FileZipOutlined } from '@ant-design/icons';
+import { MAX_FILE_SIZE } from '../constants/rules.ts';
+import { Space, Typography } from 'antd';
 
 const { Text } = Typography;
 
 const UploadFieldContent = () => {
+
   return (
     <Space direction={'vertical'}>
       <FileZipOutlined style={{ fontSize: '3em', color: 'blueviolet' }} />
