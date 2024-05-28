@@ -1,6 +1,6 @@
-import { WebSocketServer } from "ws";
+import { WebSocket } from 'ws';
 
-const server = new WebSocketServer({ port: 5599 });
+const server = new WebSocket.Server({ port: 5599 });
 console.log('WS Server is now up 🌈');
 
 server.on('connection', function connection(ws) {

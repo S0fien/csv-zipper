@@ -1,4 +1,4 @@
-import Title from "antd/lib/typography/Title";
+import Title from 'antd/lib/typography/Title';
 
 const Heading = () => {
   return (

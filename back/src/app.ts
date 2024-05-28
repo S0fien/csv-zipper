@@ -10,52 +10,52 @@ import { pinoHttp } from 'pino-http';
 import logger from './utils/logger';
 import { errorHandler } from './middlewares/errorHandler';
 
-checkOrCreateDir(PATHS.UPLOAD_DIR_PATH)
+checkOrCreateDir(PATHS.UPLOAD_DIR_PATH);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, PATHS.UPLOAD_DIR_PATH)
+    cb(null, PATHS.UPLOAD_DIR_PATH);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
-  }
-})
-const upload = multer({ storage })
+    cb(null, Date.now() + '-' + file.originalname);
+  },
+});
+const upload = multer({ storage });
 
-dotenv.config()
-const app = express()
-const port = process.env.APP_PORT || 3000
+dotenv.config();
+const app = express();
+const port = process.env.APP_PORT || 3040;
 
-app.use(pinoHttp({ logger }))
-app.use(cors())
-app.use(helmet())
-app.use(express.json())
-app.use(errorHandler)
+app.use(pinoHttp({ logger }));
+app.use(cors());
+app.use(helmet());
+app.use(express.json());
+app.use(errorHandler);
 
 app.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', '*')
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Content-Type', 'text/event-stream')
-  res.setHeader('Connection', 'keep-alive')
-  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('Cache-Control', 'no-cache');
 
-  next()
-})
+  next();
+});
 
 // Use routes
 app.get('/', (req: Request, res: Response): void => {
-  res.status(200).send('Hello World! POST to /upload to zip your CSV.')
-})
+  res.status(200).send('Hello World! POST to /upload to zip your CSV.');
+});
 
-app.get('/downloads/:id', downloadFile)
+app.get('/downloads/:id', downloadFile);
 
-app.post('/upload', upload.single('file'), uploadFile)
+app.post('/upload', upload.single('file'), uploadFile);
 
 // Start Express server
 app.listen(port, () => {
-  logger.info(`Server started at http://localhost:${port}`)
-})
+  logger.info(`Server started at http://localhost:${port}`);
+});
 
-export default app
+export default app;

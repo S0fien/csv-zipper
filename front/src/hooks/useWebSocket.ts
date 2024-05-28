@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ApiResponseType } from "../types/ApiResponseType";
+import { useEffect, useState } from 'react';
+import { ApiResponseType } from '../types/ApiResponseType';
 
 function useWebSocket(url: string) {
   const [, setSocket] = useState<WebSocket | null>(null);

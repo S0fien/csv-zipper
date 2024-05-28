@@ -1,11 +1,11 @@
-import fs from "fs";
+import fs from 'fs';
 
 type FileType = {
-  name: string,
-  path: string,
-}
+  name: string;
+  path: string;
+};
 export interface CreateArchiveInterface {
-  output: fs.WriteStream,
-  outputFilePath: string,
-  files: FileType[]
+  output: fs.WriteStream;
+  outputFilePath: string;
+  files: FileType[];
 }

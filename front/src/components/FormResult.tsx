@@ -13,14 +13,18 @@ export const FormResult = () => {
   const { isDownloadReady, downloadUrl } = context;
 
   if (!isOpen) {
-    return <div data-testid={'form-result'}>
-      <Text>Connecting to the WebSockets server...</Text>
-    </div>;
+    return (
+      <div data-testid={'form-result'}>
+        <Text>Connecting to the WebSockets server...</Text>
+      </div>
+    );
   }
   if (isDownloadReady) {
     return (
       <div data-testid={'form-result'}>
-        <Title level={3} type={'success'}>Archive is now ready !</Title>
+        <Title level={3} type={'success'}>
+          Archive is now ready !
+        </Title>
         <Button type={'primary'} size={'large'} download={'zipped-csv.zip'} href={downloadUrl}>
           Download your .ZIP
         </Button>
@@ -28,9 +32,7 @@ export const FormResult = () => {
     );
   }
 
-  return (
-    <div data-testid={'form-result'} />
-  )
+  return <div data-testid={'form-result'} />;
 };
 
 export default FormResult;

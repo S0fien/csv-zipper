@@ -59,7 +59,7 @@ const UploadField = () => {
           error: false,
         });
       } catch (err) {
-        const error = err as Error
+        const error = err as Error;
         setContext({
           ...context,
           isUploading: false,
@@ -92,7 +92,7 @@ const UploadField = () => {
       showUploadList={false}
       customRequest={(options) => customRequest(options)}
     >
-      <UploadFieldContent />
+        <UploadFieldContent />
     </Upload.Dragger>
   );
 };

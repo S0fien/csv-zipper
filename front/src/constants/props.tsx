@@ -7,7 +7,11 @@ const { Text } = Typography;
 
 export const FEEDBACK_PROPS = {
   ERROR_MESSAGE_PROPS: (errorMessage: string) => ({
-    subTitle: <Text>Error message : <Text code>{errorMessage}</Text></Text>,
+    subTitle: (
+      <Text>
+        Error message : <Text code>{errorMessage}</Text>
+      </Text>
+    ),
     status: 'error' as ResultStatusType,
     icon: <AlertFilled />,
     message: <Text>Oops! We may encounter tech problems.</Text>,

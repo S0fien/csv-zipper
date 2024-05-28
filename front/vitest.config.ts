@@ -9,6 +9,6 @@ export default defineConfig(
     // @ts-expect-error
     test: {
       environment: 'jsdom',
-    }
-  })
+    },
+  }),
 );

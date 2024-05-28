@@ -17,7 +17,7 @@ export interface storeInterface {
   isUploading: boolean;
   isAwaitingServer: boolean;
   error?: boolean;
-  errorMessage?: string,
+  errorMessage?: string;
   isDownloadReady: boolean;
   downloadUrl?: string;
   file?: null;
