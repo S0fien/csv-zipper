@@ -1,8 +1,4 @@
-export type FileType = {
-  path: string;
-  name: string;
-  data: ArrayBuffer;
-};
+import { FileType } from './FileType.ts';
 
 export type ApiResponseType = {
   event: string;

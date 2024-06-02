@@ -30,6 +30,8 @@ const useFileHandler = () => {
     }
   }, [context, downloadMessage, isDownloadReady, isRequesting, setContext]);
 
+
+  // TODO: should be way more precise
   useEffect(() => {
     if (messages) {
       messages.forEach((message: ApiResponseType) => {

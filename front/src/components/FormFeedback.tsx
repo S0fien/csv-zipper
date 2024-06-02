@@ -1,10 +1,10 @@
 import { useContext } from 'react';
 import { FEEDBACK_PROPS } from '../constants/props.tsx';
 import { FileContext } from '../contexts/FileContext.ts';
-import { FeedbackMessageInterface } from '../types/FeedbackMessage.interface.ts';
+import { FeedbackMessageType } from '../types/FeedbackMessageType.ts';
 import { Result } from 'antd';
 
-const FeedbackMessage = ({ ...defaultProps }: FeedbackMessageInterface) => {
+const FeedbackMessage = ({ ...defaultProps }: FeedbackMessageType) => {
   return (
     <div data-testid={'feedback-message'}>
       <Result

@@ -1,127 +1,106 @@
-import type { RowType } from '../types/RowType';
+import type { FileHeaderType } from '../types/FileHeaderType';
 import fs from 'fs';
 import * as csv from 'fast-csv';
-import { OnEndInterface } from '../interfaces/OnEnd.interface';
+import { OnEndType } from '../types/OnEndType';
 import path from 'path';
 import PATHS from '../constants/paths';
 import server from '../utils/websocketServer';
 import { COLUMNS } from '../constants/columns';
 import type { Request } from 'express';
-import { CreateArchiveInterface } from '../interfaces/CreateArchive.interface';
-import archiver from 'archiver';
-import type { FileType } from '../types/FileType';
 import logger from '../utils/logger';
 import { deleteFile, deleteFolder } from '../utils/checkOrCreateDir';
+import archiver from 'archiver';
 
 export const FilesServices = {
-  validateCsvFile: async function (filePath: string) {
+  validateCsvFile: async (filePath: string) => {
     return await new Promise((resolve, reject) => {
-      const errors: string[] = [];
-      const rows: RowType[] = [];
-
       fs.createReadStream(filePath)
         .pipe(csv.parse({ headers: true }))
         .on('error', (error) => {
           reject(error);
         })
-        .on('data', (row) => {
+        .on('headers', (headers) => {
           try {
-            FilesServices.validateRow(row);
-            rows.push(row);
+            FilesServices._validateHeaders(headers);
+            resolve(headers)
           } catch (e) {
             const error = e as Error;
-            errors.push(error['message']);
-            reject('Data validation failed in validateCsvFile.');
+            reject(`Data validation failed in validateCsvFile: ${error.message}`);
           }
         })
-        .on('end', (rowCount: number) => {
-          if (errors.length > 0) {
-            reject(`Validation errors: ${errors.join(', ')}`);
-          } else {
-            logger.info(`Parsed ${rowCount} rows`);
-            resolve(rows);
-          }
-        });
-    });
+    })
   },
 
-  onEnd: async ({ file, maleStream, femaleStream }: OnEndInterface) => {
+  _onEnd: async ({ file, maleCsv, femaleCsv }: OnEndType) => {
     fs.unlink(file!.path, (err) => {
       if (err != null) throw err;
     });
-    maleStream.end();
-    femaleStream.end();
-
     // ZIPPING PART
     logger.info('Start zipping');
-    const outputFilePath = path.join(PATHS.OUTPUT_FILE_PATH);
-    const uploadDirPath = path.join(PATHS.UPLOAD_DIR_PATH);
-    const output = fs.createWriteStream(outputFilePath);
     try {
-      const files = [
-        { path: PATHS.MALE_FILE_PATH, name: 'GENDER_MALE_ONLY.csv' },
-        { path: PATHS.FEMALE_FILE_PATH, name: 'GENDER_FEMALE_ONLY.csv' },
-      ];
-      const zip = await FilesServices.createArchive({
-        output,
-        outputFilePath,
-        files,
-      });
+      const zip = await FilesServices._createArchive( maleCsv, femaleCsv);
       server.clients.forEach((client) => {
         client.send(JSON.stringify(zip));
       });
-      // Cleaning
-      files.forEach((file: { path: fs.PathLike }) => {
-        deleteFile(path.join(file.path.toString()));
-      });
-      deleteFile(outputFilePath);
-      deleteFolder(uploadDirPath);
-      logger.info('PROCESS FINISH WITH SUCCESS');
+      FilesServices._cleanFiles()
+      logger.info('A process just finished with success.');
     } catch (e) {
       logger.error('ERROR: Zipping failed', e);
       throw new Error('Zipping failed');
     }
   },
 
-  createFilesAndHeaders: () => {
-    const maleStream = fs.createWriteStream(PATHS.MALE_FILE_PATH);
-    const femaleStream = fs.createWriteStream(PATHS.FEMALE_FILE_PATH);
+  _createFilesAndHeaders: (maleFilePath: string, femaleFilePath: string) => {
 
+    const maleCsv = fs.createWriteStream(maleFilePath);
+    const femaleCsv = fs.createWriteStream(femaleFilePath);
     const headers = COLUMNS;
-    maleStream.write(headers.join(',') + '\n');
-    femaleStream.write(headers.join(',') + '\n');
+    maleCsv.write(headers + '\n');
+    femaleCsv.write(headers + '\n');
 
-    return { maleStream, femaleStream };
+    return { maleCsv, femaleCsv };
   },
 
   transformCsvFile: async (req: Request): Promise<void> => {
     if (req.file != null) {
       try {
         const { file } = req;
-        const { maleStream, femaleStream } = FilesServices.createFilesAndHeaders();
+        const maleFilePath = path.join(PATHS.MALE_FILE_PATH);
+        const femaleFilePath = path.join(PATHS.FEMALE_FILE_PATH);
+        const { maleCsv, femaleCsv } = FilesServices._createFilesAndHeaders(maleFilePath, femaleFilePath);
 
         // PARSING CSV PART
         logger.info('Starting parsing CSV.');
         const parsedCsv = csv.parse({ headers: true });
+        const readStream = fs.createReadStream(file.path);
         fs.createReadStream(file.path)
           .pipe(parsedCsv)
           .on('data', (row) => {
-            const line = Object.values(row).join(',') + '\n';
-            if (row.gender.toLowerCase() === 'male') {
-              maleStream.write(line);
-            } else if (row.gender.toLowerCase() === 'female') {
-              femaleStream.write(line);
+            const { gender } = row
+            const rowString = Object.values(row).join(',') + '\n';
+            if (gender.toLowerCase() === 'male') {
+              if (!maleCsv.write(rowString)) {
+                readStream.pause();
+                maleCsv.once('drain', () => readStream.resume());
+              }
+            } else if (gender.toLowerCase() === 'female') {
+              if (!femaleCsv.write(rowString)) {
+                readStream.pause();
+                femaleCsv.once('drain', () => readStream.resume());
+              }
             }
           })
           .on('error', (error) => {
-            logger.error('ERROR: Could not parse CSV', error);
+            logger.error(`ERROR: Could not parse CSV : ${error.message}`);
             throw new Error('Could not parse CSV;');
           })
           .on('end', async () => {
-            await FilesServices.onEnd({
+            maleCsv.end();
+            femaleCsv.end();
+            await FilesServices._onEnd({
               file,
-              maleStream,
-              femaleStream,
+              maleCsv: maleFilePath,
+              femaleCsv: femaleFilePath,
             });
           });
       } catch (e) {
@@ -132,49 +111,50 @@ export const FilesServices = {
       throw new Error('File not present in request.');
     }
   },
-  validateRow: (row: RowType) => {
-    const rowColumns = Object.keys(row);
-    if (rowColumns.toString() !== COLUMNS.toString()) {
-      throw new Error('Missing specifics columns in file. Please try a valid format with all columns needed.');
+
+  _validateHeaders: (headers: FileHeaderType) => {
+    if (!headers.includes('gender')) {
+      logger.error('Validation failed : missing column gender.')
+      throw new Error('Validation failed : missing column gender.');
     }
   },
 
-  createArchive: async ({ output, files, outputFilePath }: CreateArchiveInterface) => {
-    return await new Promise((resolve, reject) => {
+  _cleanFiles: () => {
+    // Cleaning
+    deleteFile(path.join(PATHS.OUTPUT_FILE_PATH));
+    deleteFolder(path.join(PATHS.UPLOAD_DIR_PATH));
+  },
+
+  _createArchive: (maleFilePath: string, femaleFilePath: string) => {
+    return new Promise((resolve, reject) => {
+      const outputFilePath = path.join(PATHS.OUTPUT_FILE_PATH);
+      const output = fs.createWriteStream(outputFilePath);
       const archive = archiver('zip', {
-        zlib: { level: 9 },
+        zlib: { level: 9 } // Niveau de compression
+      });
+
+      output.on('close', () => {
+        logger.info(`Archive created successfully. Total bytes: ${archive.pointer()}`);
+        resolve({
+          event: 'archive',
+          success: true,
+          status: 'success',
+          message: 'Archive is ready!',
+          file: fs.createReadStream(outputFilePath),
+        });
+      });
+
+      archive.on('error', (err: Error) => {
+        logger.error(`Error creating zip archive: ${err.message}`);
+        reject(err.message);
       });
 
       archive.pipe(output);
-      files.forEach((file: FileType) => {
-        archive.append(fs.createReadStream(file.path), { name: file.name });
-      });
+
+      archive.append(fs.createReadStream(maleFilePath), { name: 'GENDER_MALE_ONLY.csv' });
+      archive.append(fs.createReadStream(femaleFilePath), { name: 'GENDER_FEMALE_ONLY.csv' });
+
       archive.finalize();
-
-      output.on('close', async () => {
-        fs.readFile(outputFilePath, (err, data) => {
-          if (err) reject(new Error('Cannot read file'));
-          else {
-            resolve({
-              event: 'archive',
-              success: true,
-              status: 'success',
-              message: 'Archive is ready!',
-              file: data,
-            });
-          }
-        });
-      });
-
-      archive.on('error', (err) => {
-        reject({
-          event: 'archive',
-          success: false,
-          status: 'error',
-          message: err.message,
-          file: null,
-        });
-      });
-    });
-  },
+    })
+  }
 };

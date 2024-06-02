@@ -7,7 +7,7 @@ type WithoutException<T, U> = T extends U ? never : T;
 
 type ResultStatusWithoutException = WithoutException<ResultStatusType, ExceptionStatusType>;
 
-export type FeedbackMessageInterface = {
+export type FeedbackMessageType = {
   message: JSX.Element;
   extra?: JSX.Element;
   subTitle: JSX.Element;
