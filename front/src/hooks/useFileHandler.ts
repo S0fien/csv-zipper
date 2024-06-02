@@ -20,7 +20,7 @@ const useFileHandler = () => {
 
   useEffect(() => {
     if (downloadMessage && !isDownloadReady && isRequesting) {
-      const url = FileManipulation.downloadLink(downloadMessage.file.data);
+      const url = FileManipulation.downloadLink(downloadMessage.filePath);
       setContext({
         ...context,
         isDownloadReady: true,

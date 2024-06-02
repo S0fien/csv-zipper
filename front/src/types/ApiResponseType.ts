@@ -6,5 +6,6 @@ export type ApiResponseType = {
   status: string;
   message: string;
   url?: string;
-  file: FileType;
+  filePath: string;
+  file?: FileType;
 };

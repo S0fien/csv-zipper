@@ -1,7 +1,6 @@
 import type { FileHeaderType } from '../types/FileHeaderType';
 import fs from 'fs';
 import * as csv from 'fast-csv';
-import { OnEndType } from '../types/OnEndType';
 import path from 'path';
 import PATHS from '../constants/paths';
 import server from '../utils/websocketServer';
@@ -31,10 +30,7 @@ export const FilesServices = {
     })
   },
 
-  _onEnd: async ({ file, maleCsv, femaleCsv }: OnEndType) => {
-    fs.unlink(file!.path, (err) => {
-      if (err != null) throw err;
-    });
+  _onEnd: async (maleCsv: string, femaleCsv: string) => {
     // ZIPPING PART
     logger.info('Start zipping');
     try {
@@ -42,7 +38,6 @@ export const FilesServices = {
       server.clients.forEach((client) => {
         client.send(JSON.stringify(zip));
       });
-      FilesServices._cleanFiles()
       logger.info('A process just finished with success.');
     } catch (e) {
       logger.error('ERROR: Zipping failed', e);
@@ -97,11 +92,7 @@ export const FilesServices = {
           .on('end', async () => {
             maleCsv.end();
             femaleCsv.end();
-            await FilesServices._onEnd({
-              file,
-              maleCsv: maleFilePath,
-              femaleCsv: femaleFilePath,
-            });
+            await FilesServices._onEnd(maleFilePath, femaleFilePath);
           });
       } catch (e) {
         logger.info('ERROR: Transform process failed', e);
@@ -120,8 +111,10 @@ export const FilesServices = {
   },
 
   _cleanFiles: () => {
-    // Cleaning
+    // Cleaning all tmp files
     deleteFile(path.join(PATHS.OUTPUT_FILE_PATH));
+    deleteFile(path.join(PATHS.MALE_FILE_PATH));
+    deleteFile(path.join(PATHS.FEMALE_FILE_PATH));
     deleteFolder(path.join(PATHS.UPLOAD_DIR_PATH));
   },
 
@@ -130,7 +123,7 @@ export const FilesServices = {
       const outputFilePath = path.join(PATHS.OUTPUT_FILE_PATH);
       const output = fs.createWriteStream(outputFilePath);
       const archive = archiver('zip', {
-        zlib: { level: 9 } // Niveau de compression
+        zlib: { level: 9 }
       });
 
       output.on('close', () => {
@@ -140,7 +133,7 @@ export const FilesServices = {
           success: true,
           status: 'success',
           message: 'Archive is ready!',
-          file: fs.createReadStream(outputFilePath),
+          filePath: outputFilePath,
         });
       });
 

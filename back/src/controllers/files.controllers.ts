@@ -1,8 +1,9 @@
 import { NextFunction, type Request, type Response } from 'express';
-import * as fs from 'fs';
 import { FilesServices } from '../services/files.services';
 import { ApiError } from '../middlewares/errorHandler';
 import logger from '../utils/logger';
+import path from 'path';
+import PATHS from '../constants/paths';
 
 export const uploadFile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   if (!req.file) {
@@ -27,17 +28,13 @@ export const uploadFile = async (req: Request, res: Response, next: NextFunction
 };
 
 export const downloadFile = (req: Request, res: Response, next: NextFunction) => {
-  fs.readFile(req.params.id, (err, data) => {
+  const outputFilePath = path.join(__dirname, '/../../', PATHS.OUTPUT_FILE_PATH);
+  res.sendFile(outputFilePath, (err) => {
     if (err) {
-      logger.info('Error reading file', err)
+      logger.error(`Error reading file ${err.message}`)
       next(new ApiError(500, 'Cannot read file'));
     } else {
-      res.status(200).send(data);
-      fs.unlink(req.params.id, (err) => {
-        if (err) {
-          logger.error('Cannot unlink file', err);
-        }
-      });
+      FilesServices._cleanFiles()
     }
   });
 };
